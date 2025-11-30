@@ -1,0 +1,32 @@
+[
+  {
+    "order_id": "f48fb237-e8f6-4c05-9e7a-4bfe9bc15e56",
+    "stage": "Order Placed",
+    "description": "We have received your order request.",
+    "is_completed": true,
+    "timestamp": "2025-11-26T05:35:07.962Z",
+    "id": "2ce913f3-ed01-45ab-9153-7c46211c7202",
+    "created_at": "2025-11-26T05:35:07.968Z",
+    "updated_at": "2025-11-26T05:35:07.968Z"
+  },
+  {
+    "order_id": "e7220c19-34f0-4f7f-afb8-38e652a5fc73",
+    "stage": "Order Placed",
+    "description": "We have received your order request.",
+    "is_completed": true,
+    "timestamp": "2025-11-26T05:36:27.708Z",
+    "id": "af428fd8-b627-4d67-b912-87da30aa90b1",
+    "created_at": "2025-11-26T05:36:27.711Z",
+    "updated_at": "2025-11-26T05:36:27.711Z"
+  },
+  {
+    "order_id": "33c9b5b0-9dfc-4563-92e7-19740c7d9da7",
+    "stage": "Order Placed",
+    "description": "We have received your order request.",
+    "is_completed": true,
+    "timestamp": "2025-11-26T05:47:37.783Z",
+    "id": "abee9f25-7437-4cad-88e2-9cd9678717b7",
+    "created_at": "2025-11-26T05:47:37.787Z",
+    "updated_at": "2025-11-26T05:47:37.787Z"
+  }
+]

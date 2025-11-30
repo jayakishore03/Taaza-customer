@@ -1,0 +1,21 @@
+[
+  {
+    "id": "addon-1",
+    "name": "Extra Spice Mix",
+    "price": 40.00,
+    "description": "Special spice blend for enhanced flavor",
+    "is_available": true,
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "updated_at": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "addon-2",
+    "name": "Marination Pack",
+    "price": 80.00,
+    "description": "Ready-to-use marination for your meat",
+    "is_available": true,
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "updated_at": "2024-01-01T00:00:00.000Z"
+  }
+]
+

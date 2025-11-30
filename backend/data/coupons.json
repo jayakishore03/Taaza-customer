@@ -1,0 +1,31 @@
+[
+  {
+    "id": "coupon-1",
+    "code": "SAVE10",
+    "discount_amount": 40.00,
+    "discount_percentage": null,
+    "min_order_amount": 200.00,
+    "max_discount": null,
+    "valid_from": "2024-01-01T00:00:00.000Z",
+    "valid_until": null,
+    "usage_limit": null,
+    "usage_count": 0,
+    "is_active": true,
+    "created_at": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "id": "coupon-2",
+    "code": "DISCOUNT15",
+    "discount_amount": 0.00,
+    "discount_percentage": 15,
+    "min_order_amount": 500.00,
+    "max_discount": 100.00,
+    "valid_from": "2024-01-01T00:00:00.000Z",
+    "valid_until": null,
+    "usage_limit": 100,
+    "usage_count": 5,
+    "is_active": true,
+    "created_at": "2024-01-01T00:00:00.000Z"
+  }
+]
+
