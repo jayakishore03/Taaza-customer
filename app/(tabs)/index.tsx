@@ -170,7 +170,7 @@ export default function HomeScreen() {
         }
         // Ensure shopsData is an array
         if (Array.isArray(shopsData)) {
-          setShops(shopsData);
+        setShops(shopsData);
         } else {
           console.warn('⚠️ Shops data is not an array:', typeof shopsData);
           setShops([]);

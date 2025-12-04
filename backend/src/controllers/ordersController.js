@@ -296,11 +296,10 @@ export const createOrder = async (req, res, next) => {
     // Check user's order count - free delivery for first 3 orders
     const userOrdersResult = await supabaseAdmin
       .from('orders')
-      .select('id')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId);
 
-    const userOrderCount = (userOrdersResult.data || []).length;
+    const userOrderCount = userOrdersResult.count || 0;
     const finalDeliveryCharge = userOrderCount < 3 ? 0 : deliveryCharge;
 
     // Generate order number using RPC
