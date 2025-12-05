@@ -7,7 +7,12 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
-    "seed": "node src/scripts/seed-products.js"
+    "seed": "node src/scripts/seed-supabase.js",
+    "seed:products": "node src/scripts/seed-products.js",
+    "check:tables": "node src/scripts/check-tables.js",
+    "check:data": "node check-data-summary.js",
+    "migrate": "node migrate-all-data.js",
+    "verify": "node verify-migration.js"
   },
   "keywords": [
     "express",
@@ -24,6 +29,7 @@
     "express-validator": "^7.0.1",
     "helmet": "^7.1.0",
     "morgan": "^1.10.0",
+    "pg": "^8.16.3",
     "razorpay": "^2.9.6"
   },
   "devDependencies": {

@@ -12,7 +12,7 @@ const getApiBaseUrl = () => {
   }
   
   // Default to IP address for mobile (works for both Android and iOS)
-  // Change 192.168.0.8 to your actual computer IP if different
+  // Change 192.168.0.6 to your actual computer IP if different
   // For Android emulator, you can use: http://10.0.2.2:3000/api
   // For web, this will still work if backend is accessible
   return 'http://192.168.0.8:3000/api';

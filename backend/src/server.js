@@ -25,6 +25,9 @@ import couponsRoutes from './routes/coupons.js';
 import addonsRoutes from './routes/addons.js';
 import paymentsRoutes from './routes/payments.js';
 import paymentMethodsRoutes from './routes/paymentMethods.js';
+import migrateRoutes from './routes/migrate.js';
+import migrateDirectRoutes from './routes/migrate-direct.js';
+import migrateReferenceRoutes from './routes/migrate-reference-data.js';
 
 // Load environment variables
 dotenv.config();
@@ -78,6 +81,7 @@ app.get('/api', (req, res) => {
       coupons: '/api/coupons',
       addons: '/api/addons',
       payments: '/api/payments',
+      migrate: '/api/migrate (POST /api/migrate/all to load data)',
     },
     timestamp: new Date().toISOString(),
   });
@@ -93,6 +97,9 @@ app.use('/api/coupons', couponsRoutes);
 app.use('/api/addons', addonsRoutes);
 app.use('/api/payments', paymentsRoutes);
 app.use('/api/payment-methods', paymentMethodsRoutes);
+app.use('/api/migrate', migrateRoutes);
+app.use('/api/migrate-direct', migrateDirectRoutes);
+app.use('/api/migrate-reference', migrateReferenceRoutes);
 
 // 404 handler
 app.use(notFound);

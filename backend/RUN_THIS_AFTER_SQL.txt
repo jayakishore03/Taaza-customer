@@ -1,0 +1,16 @@
+====================================
+AFTER RUNNING SQL IN SUPABASE
+====================================
+
+Run this command in PowerShell:
+
+npm run migrate
+
+This will migrate all your data:
+- 3 Shops
+- 56 Products  
+- 2 Addons
+- 2 Coupons
+
+====================================
+
