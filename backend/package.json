@@ -12,7 +12,10 @@
     "check:tables": "node src/scripts/check-tables.js",
     "check:data": "node check-data-summary.js",
     "migrate": "node migrate-all-data.js",
-    "verify": "node verify-migration.js"
+    "verify": "node verify-migration.js",
+    "add:missing-tables": "node src/scripts/add-missing-tables.js",
+    "cleanup:tables": "node src/scripts/cleanup-tables.js",
+    "add:formatted-tables": "node src/scripts/add-formatted-tables.js"
   },
   "keywords": [
     "express",

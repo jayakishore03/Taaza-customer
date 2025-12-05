@@ -4,18 +4,17 @@
  */
 
 // Get API URL from environment or use default
-// For mobile devices, use your computer's IP address instead of localhost
+// Now using Vercel deployment for production
 const getApiBaseUrl = () => {
   // First priority: Use environment variable if set
   if (process.env.EXPO_PUBLIC_API_URL) {
     return process.env.EXPO_PUBLIC_API_URL;
   }
   
-  // Default to IP address for mobile (works for both Android and iOS)
-  // Change 192.168.0.6 to your actual computer IP if different
-  // For Android emulator, you can use: http://10.0.2.2:3000/api
-  // For web, this will still work if backend is accessible
-  return 'http://192.168.0.8:3000/api';
+  // Default to Vercel production endpoint
+  // This works for both mobile devices and web
+  // Your live API: https://taaza-customer.vercel.app/api
+  return 'https://taaza-customer.vercel.app/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();

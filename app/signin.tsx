@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../contexts/AuthContext';
 import { authApi } from '../lib/api/auth';
 
@@ -221,6 +222,15 @@ export default function SignInScreen() {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
     >
       <View style={styles.container}>
+        {/* Back button - positioned independently */}
+        <TouchableOpacity 
+          style={[styles.backButton, { top: insets.top + 10 }]}
+          onPress={() => router.push('/(tabs)')}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="arrow-back" size={24} color="#DC2626" />
+        </TouchableOpacity>
+
         <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
           <View style={styles.headerCard}>
             <Text style={styles.headerTitle}>Sign In</Text>
@@ -446,6 +456,23 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 20,
+    marginTop: 50,
+  },
+  backButton: {
+    position: 'absolute',
+    left: 20,
+    zIndex: 100,
+    backgroundColor: '#FFFFFF',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 4,
   },
   headerCard: {
     backgroundColor: '#DC2626',

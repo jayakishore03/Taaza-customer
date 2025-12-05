@@ -1,6 +1,6 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert, ActivityIndicator, TextInput } from 'react-native';
 import { useState, useEffect } from 'react';
-import { MapPin, RefreshCw } from 'lucide-react-native';
+import { MapPin, RefreshCw, Search, X } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
@@ -27,6 +27,7 @@ export default function HomeScreen() {
   const [shops, setShops] = useState<Shop[]>([]);
   const [isLoadingShops, setIsLoadingShops] = useState<boolean>(true);
   const [isLoadingProducts, setIsLoadingProducts] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const { addToCart, selectedShop, setSelectedShop } = useCart();
   const { user } = useAuth();
   const router = useRouter();
@@ -294,6 +295,21 @@ export default function HomeScreen() {
     setSelectedShop(null);
   };
 
+  const handleClearSearch = () => {
+    setSearchQuery('');
+  };
+
+  // Filter products based on search query
+  const filteredProducts = products.filter((product) => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      product.name?.toLowerCase().includes(query) ||
+      product.category?.toLowerCase().includes(query) ||
+      product.description?.toLowerCase().includes(query)
+    );
+  });
+
   return (
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -402,6 +418,26 @@ export default function HomeScreen() {
               </View>
             </View>
 
+            <View style={styles.searchSection}>
+              <View style={styles.searchContainer}>
+                <Search size={20} color="#9CA3AF" strokeWidth={2} />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Search products..."
+                  placeholderTextColor="#9CA3AF"
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                {searchQuery.length > 0 && (
+                  <TouchableOpacity onPress={handleClearSearch} style={styles.clearButton}>
+                    <X size={18} color="#9CA3AF" strokeWidth={2} />
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -441,7 +477,7 @@ export default function HomeScreen() {
                   <ActivityIndicator size="small" color="#DC2626" />
                   <Text style={styles.emptyText}>Loading products...</Text>
                 </View>
-              ) : products.length === 0 ? (
+              ) : filteredProducts.length === 0 ? (
                 <View style={styles.emptyContainer}>
                   <Text
                     style={[
@@ -449,12 +485,21 @@ export default function HomeScreen() {
                       selectedCategory === 'Seafood' && styles.comingSoonText,
                     ]}
                   >
-                    {selectedCategory === 'Seafood' ? 'Coming soon' : 'No products found in this category'}
+                    {searchQuery.trim() 
+                      ? `No products found for "${searchQuery}"` 
+                      : selectedCategory === 'Seafood' 
+                        ? 'Coming soon' 
+                        : 'No products found in this category'}
                   </Text>
+                  {searchQuery.trim() && (
+                    <TouchableOpacity onPress={handleClearSearch} style={styles.clearSearchButton}>
+                      <Text style={styles.clearSearchText}>Clear search</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               ) : (
                 <View style={styles.productsGrid}>
-                  {products.map((product) => {
+                  {filteredProducts.map((product) => {
                     const { currentPrice, originalPrice, discountPercentage } = getProductPricingDetails(product);
                     const displayWeight = product.weight?.trim()
                       ? product.weight
@@ -888,5 +933,45 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
+  },
+  searchSection: {
+    paddingHorizontal: 20,
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+    gap: 10,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: '#1F2937',
+    padding: 0,
+  },
+  clearButton: {
+    padding: 4,
+  },
+  clearSearchButton: {
+    marginTop: 16,
+    backgroundColor: '#DC2626',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+  },
+  clearSearchText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
