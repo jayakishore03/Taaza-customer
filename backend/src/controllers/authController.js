@@ -298,6 +298,29 @@ export const signIn = async (req, res, next) => {
     }
 
     if (!users || users.length === 0) {
+      // Check if profile exists without user (orphaned profile)
+      const phoneOrEmail = phone || email;
+      const { data: orphanedProfiles } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .or(phone ? `phone.eq.${phone}` : `email.eq.${email}`);
+
+      if (orphanedProfiles && orphanedProfiles.length > 0) {
+        // Orphaned profile found - data inconsistency
+        console.log('⚠️  ORPHANED PROFILE DETECTED:');
+        console.log('   Profile exists but no user account');
+        console.log('   Phone/Email:', phoneOrEmail);
+        console.log('   Profile:', orphanedProfiles[0]);
+        
+        return res.status(401).json({
+          success: false,
+          error: { 
+            message: 'Your account data is incomplete. Please contact support or sign up again to create a new account.',
+            code: 'ORPHANED_PROFILE'
+          },
+        });
+      }
+
       return res.status(401).json({
         success: false,
         error: { message: 'No account found with this phone number or email. Please check your details or sign up.' },
@@ -614,6 +637,105 @@ export const checkPhoneExists = async (req, res, next) => {
           : 'Phone number is available',
       },
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Clean up orphaned profile and allow re-signup
+ * POST /api/auth/cleanup-orphaned-profile
+ */
+export const cleanupOrphanedProfile = async (req, res, next) => {
+  try {
+    const { phone, email } = req.body;
+
+    if (!phone && !email) {
+      return res.status(400).json({
+        success: false,
+        error: { message: 'Phone number or email is required' },
+      });
+    }
+
+    console.log('========================================');
+    console.log('🧹 CLEANUP ORPHANED PROFILE REQUEST');
+    console.log('========================================');
+    console.log('Phone:', phone || 'Not provided');
+    console.log('Email:', email || 'Not provided');
+
+    // Check if user exists in users table
+    let userQuery = supabase.from('users').select('*');
+    if (phone) {
+      userQuery = userQuery.eq('phone', phone);
+    } else if (email) {
+      userQuery = userQuery.eq('email', email);
+    }
+    
+    const { data: existingUsers } = await userQuery;
+
+    if (existingUsers && existingUsers.length > 0) {
+      // User exists - not orphaned
+      return res.status(400).json({
+        success: false,
+        error: { message: 'This account is valid. Please use sign in instead.' },
+      });
+    }
+
+    // Check if profile exists
+    let profileQuery = supabase.from('user_profiles').select('*');
+    if (phone) {
+      profileQuery = profileQuery.eq('phone', phone);
+    } else if (email) {
+      profileQuery = profileQuery.eq('email', email);
+    }
+
+    const { data: orphanedProfiles } = await profileQuery;
+
+    if (!orphanedProfiles || orphanedProfiles.length === 0) {
+      // No profile exists - user can sign up normally
+      return res.json({
+        success: true,
+        data: { 
+          message: 'No orphaned profile found. You can proceed with signup.',
+          canSignup: true
+        },
+      });
+    }
+
+    // Orphaned profile found - delete it and related data
+    const profileId = orphanedProfiles[0].id;
+
+    console.log('Found orphaned profile:', profileId);
+    console.log('Deleting related data...');
+
+    // Delete related data
+    await supabaseAdmin.from('addresses').delete().eq('user_id', profileId);
+    await supabaseAdmin.from('orders').delete().eq('user_id', profileId);
+    await supabaseAdmin.from('login_sessions').delete().eq('user_id', profileId);
+    await supabaseAdmin.from('activity_logs').delete().eq('user_id', profileId);
+    
+    // Delete the orphaned profile
+    const { error: deleteError } = await supabaseAdmin
+      .from('user_profiles')
+      .delete()
+      .eq('id', profileId);
+
+    if (deleteError) {
+      console.error('Error deleting orphaned profile:', deleteError);
+      throw deleteError;
+    }
+
+    console.log('✅ Orphaned profile cleaned up successfully');
+    console.log('========================================');
+
+    res.json({
+      success: true,
+      data: { 
+        message: 'Orphaned profile has been cleaned up. You can now sign up with this phone number/email.',
+        canSignup: true
+      },
+    });
+
   } catch (error) {
     next(error);
   }

@@ -3,7 +3,7 @@
  */
 
 import express from 'express';
-import { signUp, signIn, verifyAuthToken, sendPasswordResetOTP, verifyPasswordResetOTP, resetPassword, checkPhoneExists } from '../controllers/authController.js';
+import { signUp, signIn, verifyAuthToken, sendPasswordResetOTP, verifyPasswordResetOTP, resetPassword, checkPhoneExists, cleanupOrphanedProfile } from '../controllers/authController.js';
 
 const router = express.Router();
 
@@ -18,6 +18,9 @@ router.get('/verify', verifyAuthToken);
 
 // Check if phone exists
 router.post('/check-phone', checkPhoneExists);
+
+// Cleanup orphaned profile
+router.post('/cleanup-orphaned-profile', cleanupOrphanedProfile);
 
 // Forgot password - send OTP
 router.post('/forgot-password', sendPasswordResetOTP);
