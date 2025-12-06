@@ -60,7 +60,7 @@ export const signUp = async (req, res, next) => {
       });
     }
 
-    // Check if user already exists (by phone)
+    // Check if user already exists in users table (by phone)
     const { data: existingUsersByPhone } = await supabase
       .from('users')
       .select('*')
@@ -73,7 +73,21 @@ export const signUp = async (req, res, next) => {
       });
     }
 
-    // Check if user already exists (by email)
+    // Also check user_profiles table for phone number
+    const { data: existingProfilesByPhone } = await supabase
+      .from('user_profiles')
+      .select('id, name, phone')
+      .eq('phone', phone);
+
+    if (existingProfilesByPhone && existingProfilesByPhone.length > 0) {
+      console.log('⚠️  User profile exists but not in users table:', existingProfilesByPhone[0]);
+      return res.status(409).json({
+        success: false,
+        error: { message: 'An account with this phone number already exists. Please sign in instead.' },
+      });
+    }
+
+    // Check if user already exists by email in users table
     if (email) {
       const { data: existingUsersByEmail } = await supabase
         .from('users')
@@ -81,6 +95,20 @@ export const signUp = async (req, res, next) => {
         .eq('email', email);
 
       if (existingUsersByEmail && existingUsersByEmail.length > 0) {
+        return res.status(409).json({
+          success: false,
+          error: { message: 'An account with this email already exists. Please sign in or use a different email.' },
+        });
+      }
+
+      // Also check user_profiles table for email
+      const { data: existingProfilesByEmail } = await supabase
+        .from('user_profiles')
+        .select('id, name, email')
+        .eq('email', email);
+
+      if (existingProfilesByEmail && existingProfilesByEmail.length > 0) {
+        console.log('⚠️  User profile exists but not in users table:', existingProfilesByEmail[0]);
         return res.status(409).json({
           success: false,
           error: { message: 'An account with this email already exists. Please sign in or use a different email.' },
@@ -550,13 +578,32 @@ export const checkPhoneExists = async (req, res, next) => {
       });
     }
 
-    // Check if phone exists
-    const { data: users } = await supabase
+    // Check if phone exists in users table
+    const { data: usersWithPhone } = await supabase
       .from('users')
       .select('id')
       .eq('phone', phone);
 
-    const exists = users && users.length > 0;
+    const existsInUsers = usersWithPhone && usersWithPhone.length > 0;
+
+    // Also check user_profiles table
+    const { data: profilesWithPhone } = await supabase
+      .from('user_profiles')
+      .select('id')
+      .eq('phone', phone);
+
+    const existsInProfiles = profilesWithPhone && profilesWithPhone.length > 0;
+
+    // If exists in either table, consider it as registered
+    const exists = existsInUsers || existsInProfiles;
+
+    // Log inconsistency if user exists in one table but not the other
+    if (existsInUsers !== existsInProfiles) {
+      console.log('⚠️  Data inconsistency detected:');
+      console.log(`   Phone: ${phone}`);
+      console.log(`   In users table: ${existsInUsers}`);
+      console.log(`   In profiles table: ${existsInProfiles}`);
+    }
 
     res.json({
       success: true,
