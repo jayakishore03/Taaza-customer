@@ -60,17 +60,32 @@ export const signUp = async (req, res, next) => {
       });
     }
 
-    // Check if user already exists
-    const { data: existingUsers } = await supabase
+    // Check if user already exists (by phone)
+    const { data: existingUsersByPhone } = await supabase
       .from('users')
       .select('*')
       .eq('phone', phone);
 
-    if (existingUsers && existingUsers.length > 0) {
+    if (existingUsersByPhone && existingUsersByPhone.length > 0) {
       return res.status(409).json({
         success: false,
-        error: { message: 'User with this phone number already exists' },
+        error: { message: 'An account with this phone number already exists. Please sign in instead.' },
       });
+    }
+
+    // Check if user already exists (by email)
+    if (email) {
+      const { data: existingUsersByEmail } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', email);
+
+      if (existingUsersByEmail && existingUsersByEmail.length > 0) {
+        return res.status(409).json({
+          success: false,
+          error: { message: 'An account with this email already exists. Please sign in or use a different email.' },
+        });
+      }
     }
 
     // Generate user ID
@@ -97,6 +112,25 @@ export const signUp = async (req, res, next) => {
       .single();
 
     if (userError) {
+      // Handle database constraint errors with user-friendly messages
+      if (userError.code === '23505') { // PostgreSQL unique violation error code
+        if (userError.message.includes('users_email_key')) {
+          return res.status(409).json({
+            success: false,
+            error: { message: 'An account with this email already exists. Please sign in or use a different email.' },
+          });
+        }
+        if (userError.message.includes('users_phone_key')) {
+          return res.status(409).json({
+            success: false,
+            error: { message: 'An account with this phone number already exists. Please sign in instead.' },
+          });
+        }
+        return res.status(409).json({
+          success: false,
+          error: { message: 'An account with these details already exists.' },
+        });
+      }
       throw userError;
     }
 
