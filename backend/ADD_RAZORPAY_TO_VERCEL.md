@@ -254,4 +254,3 @@ If payment still doesn't work after following these steps:
 ---
 
 **Complete these steps and payment will work! 🎉**
-
