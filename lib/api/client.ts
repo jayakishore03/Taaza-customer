@@ -102,6 +102,14 @@ class ApiClient {
       const data: ApiResponse<T> = await response.json();
 
       if (!response.ok || !data.success) {
+        // Log detailed error information for debugging
+        if (__DEV__) {
+          console.error('❌ API Error Details:');
+          console.error('  URL:', url);
+          console.error('  Status:', response.status);
+          console.error('  Success:', data.success);
+          console.error('  Error:', data.error);
+        }
         throw new Error(data.error?.message || 'API request failed');
       }
 
