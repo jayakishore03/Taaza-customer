@@ -118,9 +118,14 @@ export default function PaymentMethodsScreen() {
       setCardCVV('');
       setCardholderName('');
       Alert.alert('Success', 'Card added successfully!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving card:', error);
-      Alert.alert('Error', 'Failed to save card. Please try again.');
+      const errorMessage = error?.message || 'Failed to save card';
+      Alert.alert(
+        'Unable to Save Card', 
+        `${errorMessage}\n\nNote: You can still make payments without saving cards. Razorpay will handle your payment securely.`,
+        [{ text: 'OK' }]
+      );
     } finally {
       setIsSaving(false);
     }
@@ -158,9 +163,14 @@ export default function PaymentMethodsScreen() {
       setAccountHolderName('');
       setBankName('');
       Alert.alert('Success', 'Bank account added successfully!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving bank account:', error);
-      Alert.alert('Error', 'Failed to save bank account. Please try again.');
+      const errorMessage = error?.message || 'Failed to save bank account';
+      Alert.alert(
+        'Unable to Save Bank Account', 
+        `${errorMessage}\n\nNote: You can still make payments without saving bank details. Use direct payment methods in checkout.`,
+        [{ text: 'OK' }]
+      );
     } finally {
       setIsSaving(false);
     }
@@ -222,6 +232,12 @@ export default function PaymentMethodsScreen() {
           </View>
         ) : (
           <>
+            <View style={styles.infoBox}>
+              <Text style={styles.infoText}>
+                💡 <Text style={styles.infoBold}>Optional Feature:</Text> Save payment methods for faster checkout. You can also enter payment details directly when placing orders.
+              </Text>
+            </View>
+
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Add Payment Method</Text>
               <Text style={styles.sectionSubtitle}>Choose a payment method to add</Text>
@@ -748,6 +764,22 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 14,
     color: '#6B7280',
+  },
+  infoBox: {
+    backgroundColor: '#EEF2FF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: '#3B82F6',
+  },
+  infoText: {
+    fontSize: 13,
+    color: '#1E40AF',
+    lineHeight: 20,
+  },
+  infoBold: {
+    fontWeight: '700',
   },
 });
 

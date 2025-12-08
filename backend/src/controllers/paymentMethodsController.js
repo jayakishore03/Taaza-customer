@@ -158,10 +158,26 @@ export const createPaymentMethod = async (req, res, next) => {
       .single();
 
     if (error) {
-      console.error('Error creating payment method:', error);
+      console.error('========================================');
+      console.error('❌ ERROR CREATING PAYMENT METHOD');
+      console.error('========================================');
+      console.error('Error Object:', JSON.stringify(error, null, 2));
+      console.error('Error Code:', error.code);
+      console.error('Error Message:', error.message);
+      console.error('Error Details:', error.details);
+      console.error('Error Hint:', error.hint);
+      console.error('User ID:', userId);
+      console.error('Type:', type);
+      console.error('Name:', name);
+      console.error('========================================');
+      
       return res.status(500).json({
         success: false,
-        error: { message: 'Failed to create payment method' },
+        error: { 
+          message: 'Failed to create payment method',
+          details: error.message || 'Unknown error',
+          code: error.code || 'UNKNOWN'
+        },
       });
     }
 
