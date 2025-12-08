@@ -166,11 +166,9 @@ export default function PaymentScreen() {
   }, [orderCount, calculatedDeliveryCharge]);
 
   const handleConfirmPayment = async () => {
-    if (!user || !user.address) {
-      Alert.alert('Address Required', 'Please set a delivery address before placing order.');
-      return;
-    }
-
+    // Address is already collected in checkout page
+    // We receive addressId from checkout, no need to check user.address
+    
     const isCod = selectedMethod === 'cod';
     const title = isCod ? 'Confirm Cash on Delivery' : 'Confirm Payment';
     const message = isCod
@@ -192,7 +190,7 @@ export default function PaymentScreen() {
             if (isCod) {
               const order = await ordersApi.create({
                 shopId: selectedShop?.id || undefined,
-                addressId: user.address.id || addressId,
+                addressId: addressId || user?.address?.id || undefined,
                 items: cartItems.map((item) => {
                   const weightInKg = item.product.weightInKg || 1.0;
                   const pricePerKg = item.product.pricePerKg || item.product.price;
@@ -232,8 +230,8 @@ export default function PaymentScreen() {
               currency: 'INR',
               receipt: `order_${Date.now()}`,
               notes: {
-                userId: user.id,
-                addressId: user.address.id || addressId,
+                userId: user?.id || '',
+                addressId: addressId || user?.address?.id || '',
                 shopId: selectedShop?.id || '',
               },
             });
@@ -271,7 +269,7 @@ export default function PaymentScreen() {
       // Create order after successful payment verification
       await ordersApi.create({
         shopId: selectedShop?.id || undefined,
-        addressId: user.address.id || addressId,
+        addressId: addressId || user?.address?.id || undefined,
         items: cartItems.map((item) => {
           const weightInKg = item.product.weightInKg || 1.0;
           const pricePerKg = item.product.pricePerKg || item.product.price;
