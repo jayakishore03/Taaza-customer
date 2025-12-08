@@ -13,7 +13,7 @@ import {
 } from '../data/dummyData';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
-import { ordersApi } from '../lib/api';
+import { ordersApi, usersApi } from '../lib/api';
 import { getAuthToken } from '../lib/auth/helper';
 
 export default function CheckoutScreen() {
@@ -214,14 +214,20 @@ export default function CheckoutScreen() {
       return;
     }
 
+    let finalAddressId = user?.address?.id || '';
+
     // Ensure address is saved before proceeding to payment
     if (isAuthenticated && address) {
       try {
         // Save address to user profile if authenticated
         await updateAddress(address);
+        // After saving, fetch fresh user profile to get the real address ID
+        const freshProfile = await usersApi.getProfile();
+        finalAddressId = freshProfile.address?.id || '';
       } catch (error) {
         console.error('Error saving address:', error);
-        // Continue anyway - backend will handle it
+        Alert.alert('Address Error', 'Failed to save delivery address. Please try again.');
+        return;
       }
     }
 
@@ -232,7 +238,7 @@ export default function CheckoutScreen() {
         total: total.toString(),
         subtotal: subtotal.toString(),
         discount: discount.toString(),
-        addressId: user?.address?.id || address?.id || '',
+        addressId: finalAddressId,
       },
     });
   };
