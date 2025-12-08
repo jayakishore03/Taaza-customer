@@ -183,33 +183,63 @@ export const addAddress = async (req, res, next) => {
     const userId = req.userId;
     const { contactName, phone, street, city, state, postalCode, landmark, label, isDefault } = req.body;
 
+    console.log('========================================');
+    console.log('📍 ADD ADDRESS REQUEST');
+    console.log('========================================');
+    console.log('User ID:', userId);
+    console.log('Request Body:', JSON.stringify(req.body, null, 2));
+
     if (!contactName || !phone || !street || !city || !state || !postalCode) {
+      console.log('❌ Missing required fields');
+      console.log('   contactName:', contactName ? 'Yes' : 'MISSING');
+      console.log('   phone:', phone ? 'Yes' : 'MISSING');
+      console.log('   street:', street ? 'Yes' : 'MISSING');
+      console.log('   city:', city ? 'Yes' : 'MISSING');
+      console.log('   state:', state ? 'Yes' : 'MISSING');
+      console.log('   postalCode:', postalCode ? 'Yes' : 'MISSING');
       return res.status(400).json({
         success: false,
         error: { message: 'Missing required fields' },
       });
     }
 
+    console.log('✅ All required fields present');
+
+    const addressData = {
+      user_id: userId,
+      contact_name: contactName,
+      phone,
+      street,
+      city,
+      state,
+      postal_code: postalCode,
+      landmark: landmark || null,
+      label: label || 'Home',
+      is_default: isDefault || false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    console.log('📝 Inserting address:', JSON.stringify(addressData, null, 2));
+
     const { data, error } = await supabaseAdmin
       .from('addresses')
-      .insert({
-        user_id: userId,
-        contact_name: contactName,
-        phone,
-        street,
-        city,
-        state,
-        postal_code: postalCode,
-        landmark: landmark || null,
-        label: label || 'Home',
-        is_default: isDefault || false,
-      })
+      .insert(addressData)
       .select()
       .single();
 
     if (error) {
+      console.error('❌ ERROR INSERTING ADDRESS:', error);
+      console.error('   Error Code:', error.code);
+      console.error('   Error Message:', error.message);
+      console.error('   Error Details:', JSON.stringify(error, null, 2));
       throw error;
     }
+
+    console.log('✅ Address created successfully!');
+    console.log('   Address ID:', data.id);
+    console.log('   Address:', `${data.street}, ${data.city}, ${data.state}`);
+    console.log('========================================');
 
     // Log address creation activity
     await logActivity(req, 'ADDRESS_CREATED', 'New address added', 'address', data.id, {
@@ -224,6 +254,7 @@ export const addAddress = async (req, res, next) => {
       data: formatAddress(data),
     });
   } catch (error) {
+    console.error('❌ ERROR in addAddress:', error);
     next(error);
   }
 };
@@ -237,6 +268,13 @@ export const updateAddress = async (req, res, next) => {
     const { id } = req.params;
     const userId = req.userId;
     const { contactName, phone, street, city, state, postalCode, landmark, label, isDefault } = req.body;
+
+    console.log('========================================');
+    console.log('✏️  UPDATE ADDRESS REQUEST');
+    console.log('========================================');
+    console.log('User ID:', userId);
+    console.log('Address ID:', id);
+    console.log('Request Body:', JSON.stringify(req.body, null, 2));
 
     const updateData = {
       updated_at: new Date().toISOString(),
@@ -252,6 +290,8 @@ export const updateAddress = async (req, res, next) => {
     if (label !== undefined) updateData.label = label;
     if (isDefault !== undefined) updateData.is_default = isDefault;
 
+    console.log('📝 Update Data:', JSON.stringify(updateData, null, 2));
+
     const { data, error } = await supabaseAdmin
       .from('addresses')
       .update(updateData)
@@ -261,6 +301,7 @@ export const updateAddress = async (req, res, next) => {
       .single();
 
     if (error) {
+      console.error('❌ ERROR UPDATING ADDRESS:', error);
       if (error.code === 'PGRST116') {
         return res.status(404).json({
           success: false,
@@ -270,11 +311,16 @@ export const updateAddress = async (req, res, next) => {
       throw error;
     }
 
+    console.log('✅ Address updated successfully!');
+    console.log('   Address ID:', data.id);
+    console.log('========================================');
+
     res.json({
       success: true,
       data: formatAddress(data),
     });
   } catch (error) {
+    console.error('❌ ERROR in updateAddress:', error);
     next(error);
   }
 };
