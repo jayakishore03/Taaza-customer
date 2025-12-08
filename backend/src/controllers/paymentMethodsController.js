@@ -5,10 +5,6 @@
 
 import { supabase, supabaseAdmin } from '../config/database.js';
 
-function generateId() {
-  return `pm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-}
-
 /**
  * Get all payment methods for authenticated user
  * GET /api/payment-methods
@@ -132,11 +128,10 @@ export const createPaymentMethod = async (req, res, next) => {
 
     const shouldBeDefault = isDefault || !existingMethods || existingMethods.length === 0;
 
-    // Create payment method
+    // Create payment method (let database auto-generate UUID for id)
     const { data, error } = await supabaseAdmin
       .from('payment_methods')
       .insert({
-        id: generateId(),
         user_id: userId,
         type,
         name,

@@ -51,8 +51,8 @@ export const paymentMethodsApi = {
    * Create new payment method
    */
   create: async (method: CreateCardPaymentMethod | CreateBankPaymentMethod): Promise<PaymentMethod> => {
-    const response = await apiClient.post<{ success: boolean; data: PaymentMethod }>('/payment-methods', method);
-    return response.data;
+    const response = await apiClient.post<PaymentMethod>('/payment-methods', method);
+    return response;
   },
 
   /**
