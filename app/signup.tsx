@@ -365,9 +365,6 @@ export default function SignUpScreen() {
           {phoneCheckStatus === 'exists' && (
             <View style={styles.phoneCheckContainer}>
               <Text style={styles.phoneCheckTextExists}>{phoneCheckMessage}</Text>
-              <TouchableOpacity onPress={() => router.push('/signin')}>
-                <Text style={styles.phoneCheckLinkText}>Sign In Instead</Text>
-              </TouchableOpacity>
             </View>
           )}
           {phoneCheckStatus === 'available' && !otpVerified && (
