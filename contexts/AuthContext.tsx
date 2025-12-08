@@ -150,12 +150,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     try {
       // Check if address has a valid UUID (not dummy like 'addr-1')
-      const hasValidId = updatedAddress.id && 
-        updatedAddress.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+      const addressId = updatedAddress.id;
+      const hasValidId = addressId && 
+        typeof addressId === 'string' &&
+        addressId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
 
       if (hasValidId) {
         // Update existing address
-        await usersApi.updateAddress(updatedAddress.id, updatedAddress);
+        await usersApi.updateAddress(addressId, updatedAddress);
       } else {
         // Create new address (dummy ID or no ID) - remove id field
         const { id, ...addressWithoutId } = updatedAddress;
