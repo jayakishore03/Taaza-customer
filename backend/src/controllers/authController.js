@@ -58,6 +58,11 @@ export const signUp = async (req, res, next) => {
     console.log('Name:', name);
     console.log('Phone:', phone);
     console.log('Email:', email || 'Not provided');
+    console.log('Gender:', gender || 'Not provided');
+    console.log('Profile Picture:', profilePicture || 'Not provided');
+    console.log('Address:', address ? JSON.stringify(address, null, 2) : 'Not provided');
+    console.log('========================================');
+    console.log('Email:', email || 'Not provided');
     console.log('Has Address:', !!address);
     console.log('Has Gender:', !!gender);
     console.log('Has Profile Picture:', !!profilePicture);
@@ -106,8 +111,8 @@ export const signUp = async (req, res, next) => {
         .eq('email', email);
 
       if (existingUsersByEmail && existingUsersByEmail.length > 0) {
-        return res.status(409).json({
-          success: false,
+      return res.status(409).json({
+        success: false,
           error: { message: 'An account with this email already exists. Please sign in or use a different email.' },
         });
       }
@@ -207,15 +212,19 @@ export const signUp = async (req, res, next) => {
     console.log('✅ User profile created successfully in user_profiles table');
 
     // Create default address if provided
-    if (address) {
+    let addressId = null;
+    if (address && address.street && address.city && address.state && address.postalCode) {
+      console.log('📍 Creating address in addresses table...');
+      console.log('   Address Data:', JSON.stringify(address, null, 2));
+      
       const addressData = {
         user_id: userId,
-        contact_name: name,
-        phone,
-        street: address.street || '',
-        city: address.city || '',
-        state: address.state || '',
-        postal_code: address.postalCode || '',
+        contact_name: address.contactName || name,
+        phone: address.phone || phone,
+        street: address.street,
+        city: address.city,
+        state: address.state,
+        postal_code: address.postalCode,
         landmark: address.landmark || null,
         label: address.label || 'Home',
         is_default: true,
@@ -223,14 +232,38 @@ export const signUp = async (req, res, next) => {
         updated_at: new Date().toISOString(),
       };
 
-      const { error: addressError } = await supabaseAdmin
+      const { data: addressResult, error: addressError } = await supabaseAdmin
         .from('addresses')
-        .insert(addressData);
+        .insert(addressData)
+        .select()
+        .single();
 
       if (addressError) {
-        console.error('⚠️  Warning: Error creating address:', addressError);
+        console.error('⚠️  ERROR CREATING ADDRESS:', addressError);
+        console.error('   Address Data Attempted:', JSON.stringify(addressData, null, 2));
         // Don't fail signup if address creation fails
-        // User can add address later
+        // User can add address later from profile
+      } else {
+        addressId = addressResult?.id;
+        console.log('✅ Address created successfully in addresses table');
+        console.log('   Address ID:', addressId);
+        
+        // Update user_profile with address_id
+        const { error: profileUpdateError } = await supabaseAdmin
+          .from('user_profiles')
+          .update({ address_id: addressId })
+          .eq('id', userId);
+        
+        if (profileUpdateError) {
+          console.error('⚠️  Warning: Could not link address to profile:', profileUpdateError);
+        } else {
+          console.log('✅ Address linked to user profile');
+        }
+      }
+    } else {
+      console.log('⚠️  No complete address provided during signup');
+      if (address) {
+        console.log('   Incomplete address data:', JSON.stringify(address, null, 2));
       }
     }
 
