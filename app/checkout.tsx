@@ -23,7 +23,8 @@ export default function CheckoutScreen() {
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [orderCount, setOrderCount] = useState<number | null>(null);
   const [userCoordinates, setUserCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
-  const { user, isAuthenticated, updateAddress } = useAuth();
+  const [specialInstructions, setSpecialInstructions] = useState('');
+  const { user, isAuthenticated, updateAddress} = useAuth();
 
   // Create empty address template
   const emptyAddress: Address = {
@@ -251,6 +252,7 @@ export default function CheckoutScreen() {
         subtotal: subtotal.toString(),
         discount: discount.toString(),
         addressId: finalAddressId,
+        specialInstructions: specialInstructions.trim(),
       },
     });
 
@@ -359,6 +361,21 @@ export default function CheckoutScreen() {
                 </TouchableOpacity>
               </View>
             </View>
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Special Instructions (Optional)</Text>
+            <TextInput
+              style={styles.instructionsInput}
+              placeholder="e.g., Preferred delivery time, cooking instructions, gate code, etc."
+              placeholderTextColor="#9CA3AF"
+              value={specialInstructions}
+              onChangeText={setSpecialInstructions}
+              multiline
+              numberOfLines={3}
+              maxLength={200}
+            />
+            <Text style={styles.characterCount}>{specialInstructions.length}/200</Text>
           </View>
 
           <View style={styles.billSummary}>
@@ -728,6 +745,26 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '700',
+  },
+  instructionsInput: {
+    backgroundColor: '#FFFFFF',
+    padding: 14,
+    borderRadius: 12,
+    fontSize: 14,
+    color: '#1F2937',
+    minHeight: 80,
+    textAlignVertical: 'top',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  characterCount: {
+    fontSize: 12,
+    color: '#9CA3AF',
+    textAlign: 'right',
+    marginTop: 6,
   },
   billSummary: {
     backgroundColor: '#FFFFFF',

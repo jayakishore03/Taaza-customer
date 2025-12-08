@@ -184,6 +184,15 @@ export default function OrderDetailsScreen() {
           </View>
         </View>
 
+        {order.specialInstructions && (
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Special Instructions</Text>
+            </View>
+            <Text style={styles.instructionsText}>{order.specialInstructions}</Text>
+          </View>
+        )}
+
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Items in this order</Text>
@@ -422,6 +431,16 @@ const styles = StyleSheet.create({
   infoLine: {
     fontSize: 13,
     color: '#1F2937',
+  },
+  instructionsText: {
+    fontSize: 14,
+    color: '#1F2937',
+    lineHeight: 20,
+    backgroundColor: '#FEF3C7',
+    padding: 12,
+    borderRadius: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: '#F59E0B',
   },
   missingTitle: {
     fontSize: 20,

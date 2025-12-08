@@ -56,11 +56,12 @@ const METHOD_CONFIG: Record<
 export default function PaymentScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { total = '0', subtotal = '0', discount = '0', addressId = '' } = useLocalSearchParams<{
+  const { total = '0', subtotal = '0', discount = '0', addressId = '', specialInstructions = '' } = useLocalSearchParams<{
     total?: string;
     subtotal?: string;
     discount?: string;
     addressId?: string;
+    specialInstructions?: string;
   }>();
 
   const { cartItems, clearCart, selectedShop } = useCart();
@@ -230,6 +231,7 @@ export default function PaymentScreen() {
                 deliveryCharge: deliveryCharge,
                 discount: parseFloat(discount),
                 paymentMethodText: 'Cash on Delivery',
+                specialInstructions: specialInstructions || undefined,
               });
 
               clearCart();
@@ -313,6 +315,7 @@ export default function PaymentScreen() {
         deliveryCharge: deliveryCharge,
         discount: parseFloat(discount),
         paymentMethodText: `${METHOD_CONFIG[selectedMethod].title} • Razorpay`,
+        specialInstructions: specialInstructions || undefined,
       });
 
       clearCart();

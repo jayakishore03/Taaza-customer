@@ -77,6 +77,7 @@ function formatOrder(order, items = [], timeline = [], shop = null, address = nu
     shopContact: shop?.contact_phone || '',
     shopImage: shopImage,
     paymentMethod: order.payment_method_text || '',
+    specialInstructions: order.special_instructions || '',
     deliveryEta: order.delivery_eta ? formatDate(order.delivery_eta) : undefined,
     otp: order.otp || '',
     deliveredAt: order.delivered_at || undefined,
@@ -283,6 +284,7 @@ export const createOrder = async (req, res, next) => {
       couponId,
       paymentMethodId,
       paymentMethodText,
+      specialInstructions,
     } = req.body;
 
     console.log('========================================');
@@ -296,6 +298,7 @@ export const createOrder = async (req, res, next) => {
     console.log('Delivery Charge:', deliveryCharge);
     console.log('Discount:', discount);
     console.log('Payment Method:', paymentMethodText);
+    console.log('Special Instructions:', specialInstructions || 'None');
     console.log('========================================');
 
     // Validate required fields
@@ -396,6 +399,7 @@ export const createOrder = async (req, res, next) => {
         status_note: 'Butcher is hand-cutting your order.',
         payment_method_id: paymentMethodId || null,
         payment_method_text: paymentMethodText || 'Cash on Delivery',
+        special_instructions: specialInstructions || null,
         otp,
         created_at: now,
         updated_at: now,

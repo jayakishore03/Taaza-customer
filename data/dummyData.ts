@@ -51,6 +51,7 @@ export interface OrderSummary {
   shopContact: string;
   shopImage?: string;
   paymentMethod: string;
+  specialInstructions?: string;
   deliveryEta?: string;
   otp: string;
   deliveredAt?: string; // ISO timestamp when order was delivered

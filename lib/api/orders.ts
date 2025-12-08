@@ -26,6 +26,7 @@ export interface CreateOrderInput {
   couponId?: string;
   paymentMethodId?: string;
   paymentMethodText?: string;
+  specialInstructions?: string;
 }
 
 export const ordersApi = {
