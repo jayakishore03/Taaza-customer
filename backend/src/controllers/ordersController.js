@@ -285,8 +285,22 @@ export const createOrder = async (req, res, next) => {
       paymentMethodText,
     } = req.body;
 
+    console.log('========================================');
+    console.log('🛒 CREATE ORDER REQUEST RECEIVED');
+    console.log('========================================');
+    console.log('User ID:', userId);
+    console.log('Shop ID:', shopId);
+    console.log('Address ID from request:', addressId);
+    console.log('Items:', JSON.stringify(items, null, 2));
+    console.log('Subtotal:', subtotal);
+    console.log('Delivery Charge:', deliveryCharge);
+    console.log('Discount:', discount);
+    console.log('Payment Method:', paymentMethodText);
+    console.log('========================================');
+
     // Validate required fields
     if (!items || !Array.isArray(items) || items.length === 0) {
+      console.error('❌ No items provided in request');
       return res.status(400).json({
         success: false,
         error: { message: 'Missing required field: items' },
@@ -296,21 +310,42 @@ export const createOrder = async (req, res, next) => {
     // Get user's address if not provided
     let finalAddressId = addressId;
     if (!finalAddressId) {
+      console.log('⚠️ No addressId in request, fetching from user profile...');
       const userProfile = await supabaseAdmin
         .from('user_profiles')
         .select('address_id')
         .eq('id', userId)
         .single();
       
+      console.log('User profile result:', JSON.stringify(userProfile, null, 2));
       finalAddressId = userProfile.data?.address_id;
       
       if (!finalAddressId) {
+        console.error('❌ No address found for user');
         return res.status(400).json({
           success: false,
           error: { message: 'No delivery address found. Please add a delivery address.' },
         });
       }
+      console.log('✅ Found address from profile:', finalAddressId);
     }
+
+    // Verify address exists
+    console.log('🔍 Verifying address exists:', finalAddressId);
+    const addressCheck = await supabaseAdmin
+      .from('addresses')
+      .select('id, street, city, state')
+      .eq('id', finalAddressId)
+      .single();
+    
+    if (addressCheck.error || !addressCheck.data) {
+      console.error('❌ Address not found in database:', addressCheck.error);
+      return res.status(400).json({
+        success: false,
+        error: { message: 'Invalid address. Please update your delivery address.' },
+      });
+    }
+    console.log('✅ Address verified:', JSON.stringify(addressCheck.data, null, 2));
 
     // Check user's order count - free delivery for first 3 orders
     const userOrdersResult = await supabaseAdmin
@@ -330,6 +365,19 @@ export const createOrder = async (req, res, next) => {
     const otp = otpResult.data || Math.floor(100000 + Math.random() * 900000).toString();
 
     const now = new Date().toISOString();
+    const total = subtotal + finalDeliveryCharge - discount;
+
+    console.log('📝 Creating order with data:');
+    console.log('  User ID:', userId);
+    console.log('  Shop ID:', shopId || 'None');
+    console.log('  Address ID:', finalAddressId);
+    console.log('  Order Number:', orderNumber);
+    console.log('  Subtotal:', subtotal);
+    console.log('  Delivery Charge:', finalDeliveryCharge);
+    console.log('  Discount:', discount);
+    console.log('  Total:', total);
+    console.log('  Payment Method:', paymentMethodText || 'Cash on Delivery');
+    console.log('  OTP:', otp);
 
     // Create order (ID will be auto-generated)
     const orderResult = await supabaseAdmin
@@ -343,7 +391,7 @@ export const createOrder = async (req, res, next) => {
         delivery_charge: finalDeliveryCharge,
         discount,
         coupon_id: couponId || null,
-        total: subtotal + finalDeliveryCharge - discount,
+        total: total,
         status: 'Preparing',
         status_note: 'Butcher is hand-cutting your order.',
         payment_method_id: paymentMethodId || null,
@@ -352,6 +400,7 @@ export const createOrder = async (req, res, next) => {
         created_at: now,
         updated_at: now,
       })
+      .select()
       .single();
 
     if (orderResult.error || !orderResult.data) {
@@ -364,12 +413,20 @@ export const createOrder = async (req, res, next) => {
       console.error('Error Details:', orderResult.error?.details);
       console.error('Error Hint:', orderResult.error?.hint);
       console.error('========================================');
+      
+      // Provide more specific error message
+      let errorMessage = 'Failed to create order';
+      if (orderResult.error?.message) {
+        errorMessage += ': ' + orderResult.error.message;
+      }
+      
       return res.status(500).json({
         success: false,
         error: { 
-          message: 'Failed to create order',
-          details: orderResult.error?.message || 'Unknown error',
-          code: orderResult.error?.code || 'UNKNOWN'
+          message: errorMessage,
+          details: orderResult.error?.details || orderResult.error?.message || 'Unknown error',
+          code: orderResult.error?.code || 'UNKNOWN',
+          hint: orderResult.error?.hint || ''
         },
       });
     }
@@ -401,8 +458,19 @@ export const createOrder = async (req, res, next) => {
       paymentMethod: paymentMethodText || 'Cash on Delivery',
     });
 
-    // Create order items with all details
-    const orderItems = items.map(item => {
+    // Validate and format order items
+    console.log('🔍 Validating order items...');
+    const orderItems = items.map((item, index) => {
+      console.log(`  Item ${index + 1}:`, JSON.stringify(item, null, 2));
+      
+      // Check required fields
+      if (!item.name) {
+        console.warn(`  ⚠️ Item ${index + 1} missing name, using default`);
+      }
+      if (!item.price && item.price !== 0) {
+        console.warn(`  ⚠️ Item ${index + 1} missing price, using 0`);
+      }
+      
       // Ensure all required fields are present and properly formatted
       const orderItem = {
         id: generateId(), // Generate ID explicitly
@@ -421,7 +489,7 @@ export const createOrder = async (req, res, next) => {
       return orderItem;
     });
 
-    console.log(`Creating ${orderItems.length} order items for order ${orderId}`);
+    console.log(`✅ Validated ${orderItems.length} order items for order ${orderId}`);
     console.log('Order items data:', JSON.stringify(orderItems, null, 2));
     
     try {
@@ -540,7 +608,22 @@ export const createOrder = async (req, res, next) => {
       data: formattedOrder,
     });
   } catch (error) {
-    next(error);
+    console.error('========================================');
+    console.error('❌ UNEXPECTED ERROR IN CREATE ORDER');
+    console.error('========================================');
+    console.error('Error:', error);
+    console.error('Error Message:', error.message);
+    console.error('Error Stack:', error.stack);
+    console.error('========================================');
+    
+    // Return a more descriptive error
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Failed to create order',
+        details: error.message || 'An unexpected error occurred',
+      },
+    });
   }
 };
 

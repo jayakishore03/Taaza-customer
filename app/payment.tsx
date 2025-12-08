@@ -168,12 +168,24 @@ export default function PaymentScreen() {
   const handleConfirmPayment = async () => {
     // Address is already collected in checkout page
     // Check if we have addressId or can create one from user data
-    const finalAddressId = addressId || user?.address?.id;
+    let finalAddressId = addressId || user?.address?.id || '';
     
-    if (!finalAddressId && isAuthenticated) {
-      Alert.alert('Address Required', 'Please go back to checkout and set a delivery address.');
+    // Ensure we have a valid address ID (not empty string)
+    if (!finalAddressId || finalAddressId === '') {
+      console.error('No valid address ID found');
+      console.error('addressId from params:', addressId);
+      console.error('user.address:', user?.address);
+      Alert.alert(
+        'Address Required', 
+        'Please go back to checkout and set a delivery address before placing your order.',
+        [
+          { text: 'OK', onPress: () => router.back() }
+        ]
+      );
       return;
     }
+    
+    console.log('Using address ID:', finalAddressId);
     
     const isCod = selectedMethod === 'cod';
     const title = isCod ? 'Confirm Cash on Delivery' : 'Confirm Payment';
@@ -194,9 +206,10 @@ export default function PaymentScreen() {
 
             // For Cash on Delivery, create order directly
             if (isCod) {
+              console.log('Creating COD order with address:', finalAddressId);
               const order = await ordersApi.create({
                 shopId: selectedShop?.id || undefined,
-                addressId: finalAddressId || undefined,
+                addressId: finalAddressId,
                 items: cartItems.map((item) => {
                   const weightInKg = item.product.weightInKg || 1.0;
                   const pricePerKg = item.product.pricePerKg || item.product.price;
@@ -272,12 +285,14 @@ export default function PaymentScreen() {
         razorpay_signature: signature,
       });
 
-      const finalAddressId = addressId || user?.address?.id;
+      const finalAddressId = addressId || user?.address?.id || '';
 
+      console.log('Creating order after payment with address:', finalAddressId);
+      
       // Create order after successful payment verification
       await ordersApi.create({
         shopId: selectedShop?.id || undefined,
-        addressId: finalAddressId || undefined,
+        addressId: finalAddressId,
         items: cartItems.map((item) => {
           const weightInKg = item.product.weightInKg || 1.0;
           const pricePerKg = item.product.pricePerKg || item.product.price;
